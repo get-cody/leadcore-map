@@ -46,30 +46,25 @@ npm run build
 
 ### 3. template.php
 
+Фрагмент HTML — **без** `<!DOCTYPE>`, `<html>`, `<body>` обёрток, так как подключается внутрь существующей страницы.
+
 ```php
 <?php
 if (!defined("B_PAGE_STARTED")) define("B_PAGE_STARTED", true);
 ?>
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="<?= DOCUMENT_ROOT . "/local/components/custom/russia.map/templates/.default/style.css" ?>">
-</head>
-<body>
-    <!-- Данные представителей из Битрикс -->
-    <script>
-        window.bitrixMapData = <?= json_encode($arResult['REPRESENTATIVES'], JSON_UNESCAPED_UNICODE) ?>;
-    </script>
+<!-- Стили компонента -->
+<link rel="stylesheet" href="<?= DOCUMENT_ROOT ?>local/components/custom/russia.map/templates/.default/style.css">
 
-    <!-- Контейнер компонента -->
-    <div id="russia-map-root"></div>
+<!-- Данные представителей из Битрикс -->
+<script>
+    window.bitrixMapData = <?= json_encode($arResult['REPRESENTATIVES'], JSON_UNESCAPED_UNICODE) ?>;
+</script>
 
-    <!-- Скрипт карты -->
-    <script src="<?= DOCUMENT_ROOT . "/local/components/custom/russia.map/templates/.default/script.js" ?>"></script>
-</body>
-</html>
+<!-- Контейнер компонента -->
+<div id="russia-map-root"></div>
+
+<!-- Скрипт карты -->
+<script src="<?= DOCUMENT_ROOT ?>local/components/custom/russia.map/templates/.default/script.js"></script>
 ```
 
 ### 4. component.php
