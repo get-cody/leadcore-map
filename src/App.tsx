@@ -41,7 +41,7 @@ const App: React.FC = () => {
 
       try {
         // Загрузка GeoJSON
-        const geoJsonResponse = await fetch('/russia-regions.geojson');
+        const geoJsonResponse = await fetch('/local/components/custom/russia.map/templates/.default/russia-regions.geojson');
         if (!geoJsonResponse.ok) {
           throw new Error('Не удалось загрузить геометрию регионов');
         }
