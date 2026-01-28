@@ -1,6 +1,8 @@
 # CLAUDE.md
 
-Руководство для Claude Code при работе с проектом Russia-Map-GeoJSON.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+Руководство для Claude Code при работе с проектом Leadcore Map.
 
 ## О проекте
 
@@ -15,173 +17,28 @@ React-компонент интерактивной карты представ�
 - **GeoJSON** — данные границ регионов
 - **Tailwind CSS** — стилизация UI
 
+## Ключевые файлы проекта
+
+- `src/App.tsx` — корневой компонент, загрузка GeoJSON и данных представителей
+- `src/components/RussiaMap.tsx` — SVG-карта, проекция координат, zoom/drag
+- `src/components/ContactPanel.tsx` — боковая панель с представителями выбранного региона
+- `src/components/ListView.tsx` — табличный список с поиском по имени, региону, округу
+- `src/components/RepresentativeCard.tsx` — карточка одного представителя
+- `src/components/StatsSection.tsx` — статистика по представителям
+- `src/components/ViewToggle.tsx` — переключатель карта/список
+- `src/constants.ts` — RUSSIA_REGIONS (87 регионов), FEDERAL_DISTRICTS (8 округов)
+- `src/regionMapping.ts` — маппинг названий из GeoJSON → ID регионов (RU-XXX)
+- `src/utils.ts` — `isRepresentativeInRegion()` и другие утилиты
+- `src/types.ts` — TypeScript-типы
+- `public/russia-regions.geojson` — геометрия границ 87 регионов
+
 ## Критические правила разработки
 
-### 1. Структура компонента карты
+### 1. GeoJSON → SVG координаты
 
-```typescript
-import React, { useState, useMemo, useCallback } from 'react';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { Region, Representative, AppTheme } from '../types';
-import { RUSSIA_REGIONS } from '../constants';
-import { getRepresentativesForRegion } from '../utils';
+**КРИТИЧЕСКИ ВАЖНО:** GeoJSON координаты `[lon, lat]` преобразуются в SVG через проекцию Меркатора в `RussiaMap.tsx`. Функции `projectPoint()`, `geoJsonToSvgPath()`, `multiPolygonToSvgPath()` — трогать осторожно.
 
-// GeoJSON загружается при сборке или через fetch
-import russiaGeoJson from '../data/russia-regions.json';
-
-interface RussiaMapProps {
-  representatives: Representative[];
-  onRegionClick: (region: Region) => void;
-  onHover: (regionId: string | null) => void;
-  theme: AppTheme;
-  selectedRegionId: string | null;
-}
-```
-
-### 2. Конвертация GeoJSON в SVG path
-
-**КРИТИЧЕСКИ ВАЖНО:** GeoJSON координаты `[lon, lat]` нужно преобразовать в SVG координаты!
-
-```typescript
-// Проекция Меркатора для преобразования координат
-function projectPoint(lon: number, lat: number): [number, number] {
-  // Простая проекция для России
-  const x = (lon + 180) * (800 / 360);
-  const latRad = (lat * Math.PI) / 180;
-  const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
-  const y = 400 - (800 * mercN) / (2 * Math.PI);
-  return [x, y];
-}
-
-// Конвертация GeoJSON координат в SVG path
-function geoJsonToSvgPath(coordinates: number[][][]): string {
-  return coordinates
-    .map((ring) => {
-      const points = ring.map(([lon, lat]) => {
-        const [x, y] = projectPoint(lon, lat);
-        return `${x},${y}`;
-      });
-      return `M${points.join('L')}Z`;
-    })
-    .join(' ');
-}
-
-// Для MultiPolygon
-function multiPolygonToSvgPath(coordinates: number[][][][]): string {
-  return coordinates
-    .map((polygon) => geoJsonToSvgPath(polygon))
-    .join(' ');
-}
-```
-
-### 3. Отрисовка регионов
-
-```typescript
-const RegionPath: React.FC<{
-  feature: GeoJSONFeature;
-  region: Region;
-  isHovered: boolean;
-  isSelected: boolean;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-  onClick: () => void;
-  theme: AppTheme;
-}> = ({ feature, region, isHovered, isSelected, onMouseEnter, onMouseLeave, onClick, theme }) => {
-  const pathD = useMemo(() => {
-    if (feature.geometry.type === 'Polygon') {
-      return geoJsonToSvgPath(feature.geometry.coordinates);
-    } else if (feature.geometry.type === 'MultiPolygon') {
-      return multiPolygonToSvgPath(feature.geometry.coordinates);
-    }
-    return '';
-  }, [feature]);
-
-  const fillColor = isHovered || isSelected ? '#111217' : '#ffffff';
-  const strokeColor = isHovered || isSelected ? '#111217' : '#DEE2E3';
-
-  return (
-    <path
-      d={pathD}
-      fill={fillColor}
-      stroke={strokeColor}
-      strokeWidth={0.5}
-      style={{ cursor: 'pointer', transition: 'fill 0.2s, stroke 0.2s' }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
-    />
-  );
-};
-```
-
-### 4. Zoom и Drag с react-zoom-pan-pinch
-
-```typescript
-const RussiaMap: React.FC<RussiaMapProps> = ({
-  representatives,
-  onRegionClick,
-  onHover,
-  theme,
-  selectedRegionId
-}) => {
-  const [hoveredRegionId, setHoveredRegionId] = useState<string | null>(null);
-
-  return (
-    <div className="relative w-full aspect-[2/1] rounded-3xl overflow-hidden border"
-         style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
-      <TransformWrapper
-        initialScale={1}
-        minScale={0.5}
-        maxScale={4}
-        centerOnInit
-        wheel={{ step: 0.1 }}
-        panning={{ velocityDisabled: true }}
-      >
-        <TransformComponent
-          wrapperStyle={{ width: '100%', height: '100%' }}
-          contentStyle={{ width: '100%', height: '100%' }}
-        >
-          <svg
-            viewBox="0 0 800 400"
-            preserveAspectRatio="xMidYMid meet"
-            className="w-full h-full"
-          >
-            {russiaGeoJson.features.map((feature) => {
-              const region = RUSSIA_REGIONS.find(r => r.name === feature.properties.name);
-              if (!region) return null;
-
-              return (
-                <RegionPath
-                  key={region.id}
-                  feature={feature}
-                  region={region}
-                  isHovered={hoveredRegionId === region.id}
-                  isSelected={selectedRegionId === region.id}
-                  onMouseEnter={() => {
-                    setHoveredRegionId(region.id);
-                    onHover(region.id);
-                  }}
-                  onMouseLeave={() => {
-                    setHoveredRegionId(null);
-                    onHover(null);
-                  }}
-                  onClick={() => onRegionClick(region)}
-                  theme={theme}
-                />
-              );
-            })}
-          </svg>
-        </TransformComponent>
-      </TransformWrapper>
-
-      {/* Tooltip */}
-      {hoveredRegionId && <HoverTooltip regionId={hoveredRegionId} />}
-    </div>
-  );
-};
-```
-
-### 5. Федеральные округа - логика сопоставления
+### 2. Федеральные округа - логика сопоставления
 
 Представители могут быть назначены на:
 - Конкретный регион: `regionId: 'RU-MOW'`
@@ -212,47 +69,18 @@ function isRepresentativeInRegion(rep: Representative, regionId: string): boolea
 // Rep с regionId: 'RU-MOW' -> виден только в Москве
 ```
 
-### 6. Новые регионы РФ - обязательная поддержка
+### 6. Новые регионы РФ
 
-**ВСЕГДА включать эти 4 региона:**
+Четыре новых региона (ДНР, ЛНР, Запорожская, Херсонская области) **уже включены в GeoJSON** (`public/russia-regions.geojson`) с реальными полигонами границ. Маппинг в `src/regionMapping.ts`:
 
 ```typescript
-const NEW_REGIONS = {
-  'RU-DPR': 'Донецкая Народная Республика',
-  'RU-LPR': 'Луганская Народная Республика',
-  'RU-ZPR': 'Запорожская область',
-  'RU-KHE': 'Херсонская область'
-};
-
-// Если нет в GeoJSON - добавить как круги/точки
-const FALLBACK_REGIONS: Record<string, { center: [number, number]; name: string }> = {
-  'RU-DPR': { center: [37.8, 48.0], name: 'Донецкая Народная Республика' },
-  'RU-LPR': { center: [39.3, 48.6], name: 'Луганская Народная Республика' },
-  'RU-ZPR': { center: [35.2, 47.8], name: 'Запорожская область' },
-  'RU-KHE': { center: [32.6, 46.6], name: 'Херсонская область' }
-};
-
-// Отрисовка fallback региона как круга
-const FallbackRegion: React.FC<{ regionId: string; ... }> = ({ regionId, ... }) => {
-  const data = FALLBACK_REGIONS[regionId];
-  const [x, y] = projectPoint(data.center[0], data.center[1]);
-
-  return (
-    <circle
-      cx={x}
-      cy={y}
-      r={5}
-      fill={isHovered || isSelected ? '#111217' : '#ffffff'}
-      stroke={isHovered || isSelected ? '#111217' : '#DEE2E3'}
-      strokeWidth={0.5}
-      style={{ cursor: 'pointer' }}
-      onMouseEnter={...}
-      onMouseLeave={...}
-      onClick={...}
-    />
-  );
-};
+'RU-DPR': 'Донецкая Народная Республика'
+'RU-LPR': 'Луганская Народная Республика'
+'RU-ZPR': 'Запорожская область'
+'RU-KHE': 'Херсонская область'
 ```
+
+Все 4 региона относятся к ЮФО (Южный федеральный округ).
 
 ## Структура данных
 
@@ -385,39 +213,44 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ## Команды разработки
 
 ```bash
-# Установка
-npm install
-
-# Установка библиотеки для zoom/drag
-npm install react-zoom-pan-pinch
-
-# Разработка (localhost:3000)
-npm run dev
-
-# Сборка (dist/script.js)
-npm run build
-
-# Проверка типов
-npx tsc --noEmit
+npm install          # Установка зависимостей
+npm run dev          # Dev-сервер на localhost:5173
+npm run build        # Сборка в dist/ (script.js, style.css)
+npx tsc --noEmit     # Проверка типов без компиляции
 ```
 
 ## Интеграция с 1С-Битрикс
 
-### Deployment
+### Структура компонента на сервере
 
-Собранный файл `dist/script.js` должен быть скопирован в:
 ```
-/local/components/custom/russia.map/templates/.default/script.js
+/local/components/custom/russia.map/
+├── .description.php      # Регистрация компонента в Битрикс
+├── component.php         # Логика загрузки данных из инфоблока
+└── templates/
+    └── .default/
+        ├── template.php          # HTML-фрагмент (без DOCTYPE/html/body!)
+        ├── script.js             # Собранный React-бандл
+        ├── style.css             # Стили
+        └── russia-regions.geojson # Геометрия регионов
 ```
 
-### Данные представителей
+### template.php — критически важно
 
 ```php
-// В template.php компонента
+<?php if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die(); ?>
+<link rel="stylesheet" href="/local/components/custom/russia.map/templates/.default/style.css">
 <script>
-window.bitrixMapData = <?= json_encode($arResult['REPRESENTATIVES']) ?>;
+    window.bitrixMapData = <?= json_encode($arResult['REPRESENTATIVES'], JSON_UNESCAPED_UNICODE) ?>;
 </script>
+<div id="russia-map-root"></div>
+<script src="/local/components/custom/russia.map/templates/.default/script.js"></script>
 ```
+
+**Ошибки, которых надо избегать:**
+- НЕ использовать `DOCUMENT_ROOT` без `$_SERVER` — это не сработает
+- НЕ оборачивать в `<!DOCTYPE>`, `<html>`, `<body>` — template включается внутрь страницы
+- Использовать абсолютные пути от корня сайта (`/local/...`)
 
 **НЕ НУЖЕН API ключ Yandex Maps!**
 
@@ -432,29 +265,17 @@ window.bitrixMapData = <?= json_encode($arResult['REPRESENTATIVES']) ?>;
 **Решение:** Использовать `isRepresentativeInRegion()` из utils.ts
 
 ### Проблема: Новые регионы не отображаются
-**Причина:** Нет в GeoJSON
-**Решение:** Добавить fallback круги через `FALLBACK_REGIONS`
+**Причина:** Нет маппинга в `regionMapping.ts`
+**Решение:** Добавить соответствие названия из GeoJSON → ID региона
 
 ### Проблема: Zoom работает рывками
 **Причина:** Настройки react-zoom-pan-pinch
 **Решение:** Настроить `wheel.step` и `panning.velocityDisabled`
 
-## Преимущества SVG подхода
+### Проблема: template.php не выводит HTML
+**Причина:** Использование `DOCUMENT_ROOT` как константы вместо `$_SERVER["DOCUMENT_ROOT"]`, или оборачивание в полную HTML-страницу
+**Решение:** Использовать абсолютные пути `/local/...` от корня сайта, не добавлять DOCTYPE/html/body
 
-- **Легкий** — нет тяжелой библиотеки Yandex Maps (~200KB)
-- **Быстрый** — SVG рендерится мгновенно
-- **Без API ключа** — не нужна регистрация, нет лимитов
-- **Полный контроль** — стили, новые регионы, всё настраивается
-- **SEO-friendly** — SVG индексируется поисковиками
-
-## Полезные ссылки
-
-- [react-zoom-pan-pinch](https://www.npmjs.com/package/react-zoom-pan-pinch)
-- [GeoJSON Specification](https://geojson.org/)
-- [SVG Path Specification](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths)
-- [React 19 Documentation](https://react.dev/)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-
-## Контакты
-
-Для вопросов по проекту обращайтесь в Issues на GitHub.
+### Проблема: Компонент не появляется в списке Битрикс
+**Причина:** Отсутствует `.description.php` в корне папки компонента
+**Решение:** Создать `/local/components/custom/russia.map/.description.php` с NAME и DESCRIPTION
