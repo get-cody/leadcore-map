@@ -59,11 +59,11 @@ const RussiaMap: React.FC<RussiaMapProps> = ({
   if (error) {
     return (
       <div
-        className="relative w-full aspect-[5/3] rounded-3xl overflow-hidden border flex items-center justify-center"
+        className="relative w-full h-full min-h-[200px] rounded-2xl md:rounded-3xl overflow-hidden border flex items-center justify-center"
         style={{ backgroundColor: DEFAULT_THEME.background, borderColor: DEFAULT_THEME.accent }}
       >
-        <div className="text-center p-8">
-          <div className="text-red-500 font-bold uppercase text-sm tracking-wide mb-2">
+        <div className="text-center p-4 md:p-8">
+          <div className="text-red-500 font-bold uppercase text-xs md:text-sm tracking-wide mb-2">
             {error}
           </div>
           <div className="text-slate-400 text-xs">
@@ -76,7 +76,7 @@ const RussiaMap: React.FC<RussiaMapProps> = ({
 
   return (
     <div
-      className="relative w-full aspect-[5/3] rounded-3xl overflow-hidden border shadow-inner"
+      className="relative w-full h-full min-h-[250px] rounded-2xl md:rounded-3xl overflow-hidden border shadow-inner"
       style={{ backgroundColor: DEFAULT_THEME.background, borderColor: DEFAULT_THEME.accent }}
       onMouseMove={handleMouseMove}
     >

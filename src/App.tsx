@@ -25,8 +25,14 @@ const LocationIcon: React.FC = () => (
   </svg>
 );
 
+// Определяем начальный режим просмотра на основе ширины экрана
+const getInitialViewMode = (): ViewMode => {
+  if (typeof window === 'undefined') return 'map';
+  return window.innerWidth < 768 ? 'list' : 'map';
+};
+
 const App: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>('map');
+  const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
   const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
   const [geoJsonData, setGeoJsonData] = useState<GeoJSON | null>(null);
@@ -76,24 +82,24 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] p-6">
+    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Заголовок */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 md:mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
               <LocationIcon />
             </div>
-            <h1 className="text-xl font-bold text-slate-900">Представительства</h1>
+            <h1 className="text-lg md:text-xl font-bold text-slate-900">Наши представители</h1>
           </div>
           <ViewToggle mode={viewMode} onChange={setViewMode} />
         </div>
 
         {/* Основной контент */}
         {viewMode === 'map' ? (
-          <div className="flex gap-6" style={{ height: '600px' }}>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 md:h-[600px]">
             {/* Карта */}
-            <div className="flex-1 h-full">
+            <div className="flex-1 min-h-[300px] md:h-full">
               <RussiaMap
                 representatives={representatives}
                 onRegionClick={handleRegionClick}
@@ -105,8 +111,8 @@ const App: React.FC = () => {
             </div>
 
             {/* Боковая панель */}
-            <div className="w-80 flex-shrink-0 h-full">
-              <div className="bg-white rounded-3xl p-6 border border-slate-100 h-full overflow-hidden flex flex-col">
+            <div className="w-full md:w-80 flex-shrink-0 md:h-full">
+              <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 h-full overflow-hidden flex flex-col min-h-[200px]">
                 <ContactPanel
                   selectedRegionId={selectedRegionId}
                   representatives={representatives}

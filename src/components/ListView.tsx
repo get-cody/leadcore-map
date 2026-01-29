@@ -76,25 +76,25 @@ const ListView: React.FC<ListViewProps> = ({ representatives }) => {
   }, [representatives, searchQuery]);
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Поле поиска */}
       <input
         type="text"
         placeholder="Поиск по имени, региону, округу..."
         value={searchQuery}
         onChange={e => setSearchQuery(e.target.value)}
-        className="w-full px-6 py-4 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 focus:border-transparent transition-all"
+        className="w-full px-4 md:px-6 py-3 md:py-4 border border-slate-200 rounded-xl md:rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 focus:border-transparent transition-all"
       />
 
       {/* Сетка карточек */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mt-4 md:mt-6">
           {filtered.map(rep => (
             <RepresentativeCard key={rep.id} representative={rep} showRegion />
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 text-slate-400">
+        <div className="text-center py-8 md:py-12 text-slate-400 text-sm mt-4 md:mt-6">
           {searchQuery ? 'Ничего не найдено' : 'Нет представителей'}
         </div>
       )}

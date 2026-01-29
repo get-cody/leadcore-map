@@ -25,10 +25,10 @@ const RepresentativeCard: React.FC<RepresentativeCardProps> = ({ representative:
   const regionNames = regionIds.map(getRegionName);
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
       {/* Аватар и имя */}
-      <div className="flex items-start gap-3 mb-4">
-        <div className="w-12 h-12 rounded-xl bg-[#111217] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+      <div className="flex items-start gap-3 mb-3 md:mb-4">
+        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-[#111217] text-white flex items-center justify-center font-bold text-xs md:text-sm flex-shrink-0">
           {getInitials(rep.name)}
         </div>
         <div className="font-semibold text-slate-900 text-sm leading-tight break-words min-w-0">
@@ -38,17 +38,17 @@ const RepresentativeCard: React.FC<RepresentativeCardProps> = ({ representative:
 
       {/* Регион (только если showRegion=true) */}
       {showRegion && regionNames.length > 0 && (
-        <div className="text-xs text-slate-500 mb-3">
+        <div className="text-[11px] md:text-xs text-slate-500 mb-2 md:mb-3">
           {regionNames.join(', ')}
         </div>
       )}
 
       {/* Контакты */}
-      <div className="space-y-2 text-sm">
+      <div className="space-y-1.5 md:space-y-2 text-sm">
         {rep.phone && (
           <a
             href={`tel:${rep.phone.replace(/[^\d+]/g, '')}`}
-            className="block text-slate-600 hover:text-slate-900 transition-colors break-words"
+            className="block text-slate-600 hover:text-slate-900 active:text-slate-900 transition-colors break-all"
           >
             {rep.phone}
           </a>
@@ -56,7 +56,7 @@ const RepresentativeCard: React.FC<RepresentativeCardProps> = ({ representative:
         {rep.email && (
           <a
             href={`mailto:${rep.email}`}
-            className="block text-slate-500 hover:text-slate-900 transition-colors break-words"
+            className="block text-slate-500 hover:text-slate-900 active:text-slate-900 transition-colors break-all text-xs md:text-sm"
           >
             {rep.email}
           </a>
@@ -65,7 +65,7 @@ const RepresentativeCard: React.FC<RepresentativeCardProps> = ({ representative:
 
       {/* Направления (теги) */}
       {showRegion && rep.activity && rep.activity.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-3">
+        <div className="flex flex-wrap gap-1 mt-2 md:mt-3">
           {rep.activity.map((act, idx) => (
             <span
               key={idx}

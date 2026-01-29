@@ -19,12 +19,40 @@ const RegionTooltip: React.FC<RegionTooltipProps> = ({
 
   if (!region) return null;
 
+  // Позиционирование с учетом границ экрана
+  const tooltipWidth = 220;
+  const tooltipHeight = 80;
+  const padding = 16;
+
+  let left = mousePos.x + 20;
+  let top = mousePos.y - 40;
+
+  // Проверка выхода за правый край
+  if (left + tooltipWidth > window.innerWidth - padding) {
+    left = mousePos.x - tooltipWidth - 20;
+  }
+
+  // Проверка выхода за нижний край
+  if (top + tooltipHeight > window.innerHeight - padding) {
+    top = mousePos.y - tooltipHeight - 10;
+  }
+
+  // Проверка выхода за верхний край
+  if (top < padding) {
+    top = padding;
+  }
+
+  // Проверка выхода за левый край
+  if (left < padding) {
+    left = padding;
+  }
+
   return (
     <div
-      className="fixed z-[9999] pointer-events-none bg-white border border-slate-200 shadow-2xl rounded-2xl p-4 min-w-[220px]"
+      className="fixed z-[9999] pointer-events-none bg-white border border-slate-200 shadow-2xl rounded-xl md:rounded-2xl p-3 md:p-4 min-w-[180px] md:min-w-[220px]"
       style={{
-        left: mousePos.x + 20,
-        top: mousePos.y - 40,
+        left,
+        top,
       }}
     >
       <div className="text-sm font-black text-slate-900 leading-tight mb-2">
