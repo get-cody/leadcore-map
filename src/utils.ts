@@ -2,14 +2,20 @@ import type { Representative, GeoJSONGeometry } from './types';
 import { RUSSIA_REGIONS } from './constants';
 
 // Нормализация ID региона (Битрикс может использовать RF-*, мы используем RU-*)
-export function normalizeRegionId(id: string): string {
+export function normalizeRegionId(id: string | null | undefined): string {
+  if (!id) return '';
   return id.replace(/^RF-/, 'RU-');
 }
 
 // Проверка: представитель работает в данном регионе?
 export function isRepresentativeInRegion(rep: Representative, regionId: string): boolean {
-  const regionIds = Array.isArray(rep.regionId) ? rep.regionId : [rep.regionId];
+  if (!rep.regionId) return false;
+
+  const regionIds = (Array.isArray(rep.regionId) ? rep.regionId : [rep.regionId]).filter(Boolean);
+  if (regionIds.length === 0) return false;
+
   const normalizedRegionId = normalizeRegionId(regionId);
+  if (!normalizedRegionId) return false;
 
   // 1. Прямое совпадение ID региона
   if (regionIds.some(id => normalizeRegionId(id) === normalizedRegionId)) {
@@ -85,13 +91,15 @@ export function geometryToPath(geometry: GeoJSONGeometry): string {
 }
 
 // Получить инициалы из имени
-export function getInitials(name: string): string {
+export function getInitials(name: string | null | undefined): string {
+  if (!name) return '?';
   return name
     .split(' ')
     .slice(0, 2)
     .map(word => word[0])
+    .filter(Boolean)
     .join('')
-    .toUpperCase();
+    .toUpperCase() || '?';
 }
 
 // Склонение слова "представитель"

@@ -9,7 +9,9 @@ interface RepresentativeCardProps {
 }
 
 // Получить название региона/округа по ID
-function getRegionName(regionId: string): string {
+function getRegionName(regionId: string | null | undefined): string {
+  if (!regionId) return '';
+
   // Проверяем, это федеральный округ?
   const district = FEDERAL_DISTRICTS.find(d => d.id === regionId);
   if (district) return district.name;
@@ -20,9 +22,9 @@ function getRegionName(regionId: string): string {
 }
 
 const RepresentativeCard: React.FC<RepresentativeCardProps> = ({ representative: rep, showRegion = false }) => {
-  // Получаем названия регионов
-  const regionIds = Array.isArray(rep.regionId) ? rep.regionId : [rep.regionId];
-  const regionNames = regionIds.map(getRegionName);
+  // Получаем названия регионов (фильтруем null/undefined)
+  const regionIds = (Array.isArray(rep.regionId) ? rep.regionId : [rep.regionId]).filter(Boolean);
+  const regionNames = regionIds.map(getRegionName).filter(Boolean);
 
   return (
     <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">

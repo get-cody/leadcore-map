@@ -16,13 +16,13 @@ const ListView: React.FC<ListViewProps> = ({ representatives }) => {
     const query = searchQuery.toLowerCase();
     return representatives.filter(rep => {
       // Поиск по имени, email, телефону
-      if (rep.name.toLowerCase().includes(query) ||
+      if (rep.name?.toLowerCase().includes(query) ||
           rep.email?.toLowerCase().includes(query) ||
           rep.phone?.includes(query)) {
         return true;
       }
 
-      const regionIds = Array.isArray(rep.regionId) ? rep.regionId : [rep.regionId];
+      const regionIds = (Array.isArray(rep.regionId) ? rep.regionId : [rep.regionId]).filter(Boolean);
 
       // Поиск по названиям регионов (прямое назначение)
       if (regionIds.some(id => {
