@@ -192,6 +192,77 @@ const REGION_STYLE = {
    - При клике регион остается подсвеченным
    - При клике на другой регион - переключается
 
+## Git Workflow (ОБЯЗАТЕЛЬНО СЛЕДОВАТЬ!)
+
+### Стратегия: GitHub Flow
+
+**КРИТИЧЕСКИ ВАЖНО:** Ветка `main` — это то, что развернуто на продакшене. **НИКОГДА** не коммитить напрямую в `main`!
+
+### Процесс разработки
+
+1. **Перед началом работы:**
+   ```bash
+   git checkout main
+   git pull
+   git checkout -b feature/short-description
+   ```
+
+2. **Разработка и тестирование:**
+   ```bash
+   npm run dev  # Локальное тестирование
+   # Вносите изменения, тестируйте
+   ```
+
+3. **Коммит изменений:**
+   ```bash
+   git add <измененные файлы>
+   git commit -m "feat: описание изменений"
+   ```
+
+4. **Отправка на GitHub:**
+   ```bash
+   git push -u origin feature/short-description
+   ```
+
+5. **Создание Pull Request:**
+   - Перейти по ссылке из вывода `git push`
+   - Или создать PR на GitHub вручную: https://github.com/get-cody/leadcore-map/pulls
+   - Описать изменения, проверить diff
+   - **Не мержить сразу!** Дать время на проверку
+
+6. **После одобрения PR — мерж в main:**
+   - Нажать "Merge pull request" на GitHub
+   - Удалить feature-ветку (GitHub предложит автоматически)
+
+7. **Обновление на сервере:**
+   ```bash
+   git checkout main
+   git pull
+   npm run build  # Пересобрать проект
+   # Загрузить dist/script.js и dist/style.css на сервер
+   ```
+
+### Именование веток
+
+- `feature/название` — новая функциональность
+- `fix/название` — исправление бага
+- `refactor/название` — рефакторинг
+- `docs/название` — обновление документации
+
+**Примеры:**
+- `feature/add-activity-tags`
+- `fix/region-selection-bug`
+- `refactor/improve-performance`
+
+### Защита main (настроить на GitHub)
+
+1. Settings → Branches → Add branch protection rule
+2. Branch name pattern: `main`
+3. ✅ Require a pull request before merging
+4. ✅ Require approvals: 1 (опционально)
+
+Это предотвратит случайные коммиты напрямую в `main`.
+
 ## Git commit правила
 
 ```bash
@@ -200,7 +271,7 @@ const REGION_STYLE = {
 
 <body>
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 
 # Types:
 # feat: новая функциональность
