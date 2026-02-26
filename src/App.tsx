@@ -181,7 +181,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6">
+    <div className="w-full bg-[#F5F7FA] p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Заголовок */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 md:mb-6">
