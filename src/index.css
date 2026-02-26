@@ -5,7 +5,7 @@
    @reference даёт компилятору доступ к теме без вывода CSS.
    Все переменные определены ТОЛЬКО на #russia-map-root.
    ============================================================ */
-@import "tailwindcss/utilities.css" layer(utilities);
+@import "tailwindcss/utilities.css";
 @reference "tailwindcss/theme.css";
 
 /* Все CSS-переменные Tailwind определяем ТОЛЬКО внутри компонента */
